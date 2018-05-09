@@ -91,10 +91,9 @@ def download_file(file_url, filename, file_size, output_dir):
             if chunk:
                 dl += len(chunk)
                 file.write(chunk)
-                done = int(50 * dl / file_size)
-                sys.stdout.write('\rDownloading %s [%s%s] %sKB' %
-                                 (filename, '=' * done, ' ' * (50 - done),
-                                  kb_size))
+                done = int(20 * dl / file_size)
+                sys.stdout.write('\rDownloading {0:21} [{1}{2}] {3}KB'.format(
+                    filename, '=' * done, ' ' * (20 - done), kb_size))
                 sys.stdout.flush()
     sys.stdout.write('\n')
 
