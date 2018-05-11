@@ -176,6 +176,7 @@ def get_lang_files(repository, tag, lang, output_dir):
     else:
         print('Unexpected structure {0}'.format(type(tree)))
         return False
+    not_found = True
     for item in tree:
         code = None
         if '.' in item['path']:
@@ -187,6 +188,9 @@ def get_lang_files(repository, tag, lang, output_dir):
             if not file_url:
                 file_url = item.get('url')
             download_file(file_url, item['path'], item['size'], output_dir)
+            not_found = False
+    if not_found:
+        print('Could not find any file for {}'.format(lang))
 
 
 def is_directory_writable(directory):
