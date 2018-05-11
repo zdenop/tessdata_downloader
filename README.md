@@ -1,12 +1,16 @@
 # Tesseract tessdata downloader from GitHub repositories
 
-Python script to help download only selected traindata from repositories.
+Python script to help download only selected traineddata from repositories.
 
 ## Usage
 
 To download English files usable for tesseract 3.05:
 ```
 $ python3 tessdata_downloader.py -r "tessdata" -t "3.04.00" -l eng
+```
+or you can use windows frozen script:
+```
+$ tessdata_downloader.exe -r "tessdata" -t "3.04.00" -l eng
 ```
 
 To download Orientation and script detection file usable for tesseract 4.0:
