@@ -177,20 +177,28 @@ def get_lang_files(repository, tag, lang, output_dir):
         print('Unexpected structure {0}'.format(type(tree)))
         return False
     not_found = True
+    if not tree:
+        print('No output for url "{0}" (repository "{1}")'
+              .format(tree_url, repository))
+        return False
     for item in tree:
-        code = None
-        if '.' in item['path']:
-            code = item['path'].split('.')[0]
+        code = item['path'].split('.')[0]
         if lang == code:
             file_url = item.get('git_url')
             if not file_url:
                 file_url = item.get('download_url')
             if not file_url:
                 file_url = item.get('url')
+            if item.get('type') in ("dir", "tree", "submodule"):
+                print('"{}" is directory - ignoring...'.format(item['path']))
+                continue
+            if item['size'] == 0:
+                print('"{}" has 0 lenght - skipping...'.format(item['path']))
+                continue
             download_file(file_url, item['path'], item['size'], output_dir)
             not_found = False
     if not_found:
-        print('Could not find any file for {}'.format(lang))
+        print('Could not find any file for "{}"'.format(lang))
 
 
 def is_directory_writable(directory):
