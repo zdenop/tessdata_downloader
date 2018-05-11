@@ -191,8 +191,10 @@ def get_lang_files(repository, tag, lang, output_dir):
 
 def main():
     """Main loop."""
-    parser = argparse.ArgumentParser(
-        description="Tesseract traineddata downloader")
+    desc = "Tesseract traineddata downloader {}".format(__version__)
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument(
+        "-v", "--version", action='store_true', help="Print version info")
     parser.add_argument(
         "-o",
         "--output_dir",
@@ -234,6 +236,13 @@ def main():
         "-l", "--lang", help="Language or data code of traineddata.")
     args = parser.parse_args()
 
+    if args.version:
+        print(desc, __date__)
+        print()
+        print("Author:", __author__)
+        print("Copyright:", __copyright__)
+        print("License:", __license__)
+        return
     if not args.output_dir and 'TESSDATA_PREFIX' in os.environ:
         args.output_dir = os.environ['TESSDATA_PREFIX']
     elif not args.output_dir:
