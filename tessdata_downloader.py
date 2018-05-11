@@ -189,6 +189,19 @@ def get_lang_files(repository, tag, lang, output_dir):
             download_file(file_url, item['path'], item['size'], output_dir)
 
 
+def is_directory_writable(directory):
+    """Check if directory exist and is writable.
+
+    Return False if it is not possible to create file there.
+    """
+    if not os.access(directory, os.W_OK):
+        print('Can not write to directory "{}"!\nPlease check if it exists '
+              'or if you have sufficient rights.'.format(directory))
+        return False
+    print('''We can write to directory "{}" :-) .'''.format(directory))
+    return True
+
+
 def main():
     """Main loop."""
     desc = "Tesseract traineddata downloader {}".format(__version__)
@@ -249,10 +262,15 @@ def main():
         args.output_dir = "."
     if args.list_repos:
         list_of_repos()
+        sys.exit(0)
     if args.list_tags:
         get_list_of_tags()
+        sys.exit(0)
     if args.list_of_files:
         display_repo_lof(args.repository, args.tag)
+        sys.exit(0)
+    if not is_directory_writable(args.output_dir):
+        sys.exit(0)
     if args.lang:
         get_lang_files(args.repository, args.tag, args.lang, args.output_dir)
     # show help if no arguments provided
