@@ -198,7 +198,6 @@ def is_directory_writable(directory):
         print('Can not write to directory "{}"!\nPlease check if it exists '
               'or if you have sufficient rights.'.format(directory))
         return False
-    print('''We can write to directory "{}" :-) .'''.format(directory))
     return True
 
 
