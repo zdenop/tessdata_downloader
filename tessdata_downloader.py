@@ -22,8 +22,8 @@
 import argparse
 import os
 import sys
-
 import requests
+import urllib.request
 
 __author__ = "Zdenko Podobny <zdenop@gmail.com>"
 __copyright__ = "Copyright 2018 Zdenko Podobny"
@@ -33,12 +33,13 @@ __date__ = "11/05/2018"
 
 PROJECT_URL = 'https://api.github.com/repos/tesseract-ocr/'
 REPOSITORIES = ['tessdata', 'tessdata_fast', 'tessdata_best']
+PROXIES = None
 
 
 def get_repo_tags(project_url, repository):
     """Get list of tags for repository."""
     tags_url = '{0}{1}/tags'.format(project_url, repository)
-    r = requests.get(tags_url)
+    r = requests.get(tags_url, proxies=PROXIES)
     tags = dict()
     for item in r.json():
         tags[item['name']] = item['commit']['sha']
@@ -57,7 +58,7 @@ def get_repository_lof(project_url, repository, tag):
             return None
         tree_url = '{0}{1}/git/trees/{2}'.format(project_url, repository,
                                                  tag_sha)
-    tree_content = requests.get(tree_url).json()
+    tree_content = requests.get(tree_url, proxies=PROXIES).json()
     if isinstance(tree_content, dict):
         tree = tree_content.get('tree')
     elif isinstance(tree_content, list):
@@ -78,7 +79,7 @@ def download_file(file_url, filename, file_size, output_dir):
         file_url,
         allow_redirects=True,
         stream=True,
-        headers={"Accept": "application/vnd.github.v3.raw"})
+        headers={"Accept": "application/vnd.github.v3.raw"}, proxies=PROXIES)
     content_length = req.headers.get('Content-Length')
     if content_length:
         file_size = int(content_length)
@@ -123,7 +124,7 @@ def get_sha_of_tag(repository, tag):
     """Get sha for tag."""
     sha = None
     tags_url = '{0}{1}/tags'.format(PROJECT_URL, repository)
-    r = requests.get(tags_url)
+    r = requests.get(tags_url, proxies=PROXIES)
     for item in r.json():
         if item['name'] == tag:
             sha = item['commit']['sha']
@@ -168,7 +169,7 @@ def get_lang_files(repository, tag, lang, output_dir):
               .format(repository, tag))
         tree_url = '{0}{1}/git/trees/{2}'.format(PROJECT_URL, repository,
                                                  tag_sha)
-    tree_content = requests.get(tree_url).json()
+    tree_content = requests.get(tree_url, proxies=PROXIES).json()
     if isinstance(tree_content, dict):
         tree = tree_content.get('tree')
     elif isinstance(tree_content, list):
@@ -213,8 +214,46 @@ def is_directory_writable(directory):
     return True
 
 
+def get_proxies(proxy, proxy_user):
+    """Process informations about proxies."""
+    proxies = None
+    system_proxy = urllib.request.getproxies()
+
+    # TODO: check proxy format
+    # TODO: user auth format
+
+    if (proxy or system_proxy) and not proxy_user:
+        try:
+            # try to look for local_settings.py with info about proxy
+            from local_settings import PROXIES
+            return PROXIES
+        except ImportError:
+            pass
+        # test connection without proxy_user
+        repo_name = 'tessdata'
+        try:
+            test_r = requests.get(PROJECT_URL + repo_name)
+        except:  # todo find type if exception :-)
+            # make this tesset for all sesstings
+            print('Connection is refused ')
+            sys.exit(1)
+        if test_r.json().get('name') == repo_name:
+            return proxies
+        pass
+    if not proxy:
+        pass
+        # check for system proxy
+    if not proxy_user:
+        pass
+        # proxy_user
+    # check if we have we it stored in external files
+
+    return proxies
+
+
 def main():
     """Main loop."""
+    global PROXIES
     desc = "Tesseract traineddata downloader {}".format(__version__)
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument(
@@ -258,6 +297,19 @@ def main():
         "(e.g. argument -r and -t must be used with this argument)")
     parser.add_argument(
         "-l", "--lang", help="Language or data code of traineddata.")
+    parser.add_argument(
+        "-U",
+        "--proxy-user",
+        type=str,
+        default=None,
+        help="<user:password> Proxy user and password.")
+    parser.add_argument(
+        "-x",
+        "--proxy",
+        type=str,
+        default=None,
+        help="host[:port] for https. Use this proxy. If not specified "
+        "system proxy will be used by default.")
     args = parser.parse_args()
 
     if args.version:
@@ -271,6 +323,7 @@ def main():
         args.output_dir = os.environ['TESSDATA_PREFIX']
     elif not args.output_dir:
         args.output_dir = "."
+    PROXIES = get_proxies(args.proxy, args.proxy_user)
     if args.list_repos:
         list_of_repos()
         sys.exit(0)
