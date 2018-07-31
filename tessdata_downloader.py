@@ -214,40 +214,51 @@ def is_directory_writable(directory):
     return True
 
 
-def get_proxies(proxy, proxy_user):
-    """Process informations about proxies."""
+def test_proxy_connection(test_proxies):
+    """Test if proxy information is correct."""
+    repo_name = 'tessdata'
+    try:
+        test_r = requests.get(PROJECT_URL + repo_name, proxies=test_proxies)
+    except requests.exceptions.ProxyError as error:
+        print(f'Connection is refused {error}', type(error))
+        return False
+    if test_r.json().get('name') == repo_name:
+        return True
+    return False
+
+
+def get_proxies(proxy_server, proxy_user):
+    """Process information about proxies."""
     proxies = None
-    system_proxy = urllib.request.getproxies()
+    proxy_template = f'http://{proxy_user}@{proxy_server}'
+    # try to import proxy info from local file
+    try:
+        # try to look for local_settings.py with info about proxy
+        from local_settings import PROXIES
+        if PROXIES['https'] == 'http://user:password@proxy:port':
+            # ignore example proxy setting
+            proxies = None
+        elif test_proxy_connection(PROXIES):
+            proxies = PROXIES
+        print("Loading Proxy information from file 'local_settings.py'...")
+    except ImportError:
+        pass
+
+    if proxy_server and proxy_user:
+        proxies = {'http': proxy_template,
+                   'https': proxy_template}
 
     # TODO: check proxy format
     # TODO: user auth format
-
-    if (proxy or system_proxy) and not proxy_user:
-        try:
-            # try to look for local_settings.py with info about proxy
-            from local_settings import PROXIES
-            return PROXIES
-        except ImportError:
-            pass
-        # test connection without proxy_user
-        repo_name = 'tessdata'
-        try:
-            test_r = requests.get(PROJECT_URL + repo_name)
-        except:  # todo find type if exception :-)
-            # make this tesset for all sesstings
-            print('Connection is refused ')
-            sys.exit(1)
-        if test_r.json().get('name') == repo_name:
-            return proxies
-        pass
-    if not proxy:
+    if not proxy_server:
         pass
         # check for system proxy
     if not proxy_user:
         pass
         # proxy_user
-    # check if we have we it stored in external files
-
+    # system_proxy = urllib.request.getproxies()
+    if not test_proxy_connection(proxies):
+        return -1
     return proxies
 
 
@@ -324,6 +335,9 @@ def main():
     elif not args.output_dir:
         args.output_dir = "."
     PROXIES = get_proxies(args.proxy, args.proxy_user)
+    if PROXIES == -1:
+        print("Wrong proxy information provided!")
+        sys.exit(0)
     if args.list_repos:
         list_of_repos()
         sys.exit(0)
