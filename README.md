@@ -20,8 +20,8 @@ $ python3 tessdata_downloader.py -l osd
 
 ## Known issues
 - no support for proxy (yet)
-- no gui (yet) - this is commandline tool at the moment. If you do not know what does it mean, please do not try this script ;-)
-- tested on python 3.6, so there isssues with older python version. Please report only python3 issues. There is no intention to suport python2
+- no gui (yet) - this is command line tool at the moment. If you do not know what does it mean, please do not try this script ;-)
+- tested on python 3.6, so there issues with older python version. Please report only python3 issues. There is no intention to support python2
 
 ## Python Dependencies
 * requests
