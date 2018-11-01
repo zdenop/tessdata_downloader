@@ -98,6 +98,13 @@ def download_file(file_url, filename, file_size, output_dir):
                     filename, '=' * done, ' ' * (20 - done), kb_size))
                 sys.stdout.flush()
     sys.stdout.write('\n')
+    download_size = os.stat(filename).st_size
+    print(download_size)
+    if file_size != download_size:
+        print(f"Warning: download was not successful! Filesize of downloaded file {filename} is {download_size}, "
+              f"but github filesize is {file_size}.")
+    else:
+        print(f"Download was successful.")
 
 
 def list_of_repos():
