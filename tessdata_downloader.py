@@ -23,7 +23,7 @@ import argparse
 import os
 import sys
 import requests
-import urllib.request
+# import urllib.request
 
 __author__ = "Zdenko Podobny <zdenop@gmail.com>"
 __copyright__ = "Copyright 2018 Zdenko Podobny"
@@ -64,7 +64,7 @@ def get_repository_lof(project_url, repository, tag):
     elif isinstance(tree_content, list):
         tree = tree_content
     else:
-        print('Unexpected structure {0}'.format(type(tree)))
+        print('Unexpected structure {0}'.format(type(tree_content)))
         return False
     list_of_files = []
     for item in tree:
@@ -74,16 +74,23 @@ def get_repository_lof(project_url, repository, tag):
     return list_of_files
 
 
-def check_if_file_exists(filename, filesize=0):
-    """Check if file exists."""
+def check_if_file_exists(filename, file_size=0):
+    """Check if file exists, optionally with expected size."""
     if os.path.isfile(filename):
+        # File exists
         local_size = os.stat(filename).st_size
-        if filesize and filesize == local_size:
-            return True
+        if file_size:
+            if file_size == local_size:
+                # File with expected size exists
+                return True
+            else:
+                # File size is different => not exists
+                return False
         else:
-            return False
-        return True
+            # File size isn't tested
+            return True
     else:
+        # File doesn't exist
         return False
 
 
@@ -102,8 +109,8 @@ def download_file(file_url, filename, file_size, output_dir):
     dl = 0
     output = os.path.join(output_dir, filename)
     if check_if_file_exists(output, file_size):
-        answer = input(f"Warning: File '{output}' with expected filesize {file_size} already exist!\n"
-                       f"Download again? [y/N] ")
+        answer = input("Warning: File '{0}' with expected filesize {1} already exist!\n"
+                       "Download again? [y/N] ".format(output, file_size))
         if answer.lower() != 'y':
             print('Quitting...')
             return
@@ -119,8 +126,8 @@ def download_file(file_url, filename, file_size, output_dir):
     sys.stdout.write('\n')
     download_size = os.stat(filename).st_size
     if file_size != download_size:
-        print(f"Warning: download was not successful! Filesize of downloaded file {filename} is {download_size}, "
-              f"but github filesize is {file_size}.")
+        print("Warning: download was not successful! Filesize of downloaded file {0} is {1}, "
+              "but github filesize is {2}.".format(filename, download_size, file_size))
     else:
         print(f"Download was successful.")
 
@@ -178,7 +185,7 @@ def display_repo_lof(repository, tag):
 
 
 def get_lang_files(repository, tag, lang, output_dir):
-    """Donwload language files from repository based on tag."""
+    """Download language files from repository based on tag."""
     print('Start of getting information for download of files for '
           '{0}:'.format(lang))
     if tag == "the_latest":
@@ -201,7 +208,7 @@ def get_lang_files(repository, tag, lang, output_dir):
     elif isinstance(tree_content, list):
         tree = tree_content
     else:
-        print('Unexpected structure {0}'.format(type(tree)))
+        print('Unexpected structure {0}'.format(type(tree_content)))
         return False
     not_found = True
     if not tree:
