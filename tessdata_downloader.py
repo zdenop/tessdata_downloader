@@ -68,7 +68,8 @@ def get_repository_lof(project_url, repository, tag):
         return False
     list_of_files = []
     for item in tree:
-        list_of_files.append(item['path'])
+        if item['mode'] == '100644':  # list only files
+            list_of_files.append(item['path'])
         # list_of_files.append({item['path']: (item['size'], item['sha'])})
     return list_of_files
 
