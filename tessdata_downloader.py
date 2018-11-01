@@ -74,6 +74,19 @@ def get_repository_lof(project_url, repository, tag):
     return list_of_files
 
 
+def check_if_file_exists(filename, filesize=0):
+    """Check if file exists."""
+    if os.path.isfile(filename):
+        local_size = os.stat(filename).st_size
+        if filesize and filesize == local_size:
+            return True
+        else:
+            return False
+        return True
+    else:
+        return False
+
+
 def download_file(file_url, filename, file_size, output_dir):
     """Download file."""
     req = requests.get(
@@ -88,6 +101,12 @@ def download_file(file_url, filename, file_size, output_dir):
     kb_size = int(file_size / 1024)
     dl = 0
     output = os.path.join(output_dir, filename)
+    if check_if_file_exists(output, file_size):
+        answer = input(f"Warning: File '{output}' with expected filesize {file_size} already exist!\n"
+                       f"Download again? [y/N] ")
+        if answer.lower() != 'y':
+            print('Quitting...')
+            return
     with open(output, "wb") as file:
         for chunk in req.iter_content(chunk_size=block_size):
             if chunk:
@@ -99,7 +118,6 @@ def download_file(file_url, filename, file_size, output_dir):
                 sys.stdout.flush()
     sys.stdout.write('\n')
     download_size = os.stat(filename).st_size
-    print(download_size)
     if file_size != download_size:
         print(f"Warning: download was not successful! Filesize of downloaded file {filename} is {download_size}, "
               f"but github filesize is {file_size}.")
