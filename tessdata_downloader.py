@@ -86,6 +86,8 @@ def check_if_file_exists(filename, file_size=0):
                 return True
             else:
                 # File size is different => not exists
+                print('File "{0}" exists, but it size differ to github. It '
+                      'will be overwritten.'.format(filename))
                 return False
         else:
             # File size isn't tested
