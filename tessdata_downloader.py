@@ -48,23 +48,24 @@ def get_repo_tags(project_url, repository):
 
 def get_repository_lof(project_url, repository, tag):
     """Get list of files for repository."""
+    sha = None
     if tag == "the_latest":
-        tree_url = '{0}{1}/contents'.format(project_url, repository)
+        sha = get_sha_of_tag(repository)
     else:
-        tag_sha = get_sha_of_tag(repository, tag)
-        if not tag_sha:
-            print("Unknown tag '{0}' for repository '{1}'".format(
-                tag, repository))
-            return None
-        tree_url = '{0}{1}/git/trees/{2}'.format(project_url, repository,
-                                                 tag_sha)
+        sha = get_sha_of_tag(repository, tag)
+    if not sha:
+        print("Unknown tag '{0}' for repository '{1}'".format(
+            tag, repository))
+        return None
+    tree_url = '{0}{1}/git/trees/{2}?recursive=1'.format(project_url, repository,
+                                                 sha)
     tree_content = requests.get(tree_url, proxies=PROXIES).json()
     if isinstance(tree_content, dict):
         tree = tree_content.get('tree')
     elif isinstance(tree_content, list):
         tree = tree_content
     else:
-        print('Unexpected structure {0}'.format(type(tree_content)))
+        print('Unexpected structure {0}'.format(type(tree)))
         return False
     list_of_files = []
     for item in tree:
@@ -153,14 +154,21 @@ def get_list_of_tags():
             print('No tag was found for repository "{0}"!'.format(repository))
 
 
-def get_sha_of_tag(repository, tag):
+def get_sha_of_tag(repository, tag=None, project_url=PROJECT_URL):
     """Get sha for tag."""
     sha = None
-    tags_url = '{0}{1}/tags'.format(PROJECT_URL, repository)
-    r = requests.get(tags_url, proxies=PROXIES)
-    for item in r.json():
-        if item['name'] == tag:
-            sha = item['commit']['sha']
+    if not tag:
+        url = '{0}{1}/git/refs/heads/master'.format(project_url, repository)
+    else:
+        url = '{0}{1}/tags'.format(project_url, repository)
+    r = requests.get(url, proxies=PROXIES)
+    content = r.json()
+    if isinstance(content, dict):
+        sha = content['object']['sha']
+    elif isinstance(content, list):
+        for item in content:
+            if tag and item['name'] == tag:
+                sha = item['commit']['sha']
     return sha
 
 
@@ -189,7 +197,7 @@ def get_lang_files(repository, tag, lang, output_dir):
     print('Start of getting information for download of files for '
           '{0}:'.format(lang))
     if tag == "the_latest":
-        tree_url = '{0}{1}/contents'.format(PROJECT_URL, repository)
+        tree_url = '{0}{1}/contents?recursive=1'.format(PROJECT_URL, repository)
         print("Retrieving the latest file(s) from repository '{0}'"
               .format(repository))
     else:
@@ -200,7 +208,7 @@ def get_lang_files(repository, tag, lang, output_dir):
             return None
         print("Retrieving file(s) from repository '{0}', tagged as '{1}'"
               .format(repository, tag))
-        tree_url = '{0}{1}/git/trees/{2}'.format(PROJECT_URL, repository,
+        tree_url = '{0}{1}/git/trees/{2}?recursive=1'.format(PROJECT_URL, repository,
                                                  tag_sha)
     tree_content = requests.get(tree_url, proxies=PROXIES).json()
     if isinstance(tree_content, dict):
