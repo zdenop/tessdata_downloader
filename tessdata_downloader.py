@@ -55,10 +55,11 @@ def get_repository_lof(project_url, repository, tag):
         sha = get_sha_of_tag(repository, tag)
     if not sha:
         print("Unknown tag '{0}' for repository '{1}'".format(
-            tag, repository))
+                tag, repository))
         return None
-    tree_url = '{0}{1}/git/trees/{2}?recursive=1'.format(project_url, repository,
-                                                 sha)
+    tree_url = '{0}{1}/git/trees/{2}?recursive=1'.format(project_url,
+                                                         repository,
+                                                         sha)
     tree_content = requests.get(tree_url, proxies=PROXIES).json()
     if isinstance(tree_content, dict):
         tree = tree_content.get('tree')
@@ -100,10 +101,11 @@ def check_if_file_exists(filename, file_size=0):
 def download_file(file_url, filename, file_size, output_dir):
     """Download file."""
     req = requests.get(
-        file_url,
-        allow_redirects=True,
-        stream=True,
-        headers={"Accept": "application/vnd.github.v3.raw"}, proxies=PROXIES)
+            file_url,
+            allow_redirects=True,
+            stream=True,
+            headers={"Accept": "application/vnd.github.v3.raw"},
+            proxies=PROXIES)
     content_length = req.headers.get('Content-Length')
     if content_length:
         file_size = int(content_length)
@@ -112,8 +114,9 @@ def download_file(file_url, filename, file_size, output_dir):
     dl = 0
     output = os.path.join(output_dir, filename)
     if check_if_file_exists(output, file_size):
-        answer = input("Warning: File '{0}' with expected filesize {1} already exist!\n"
-                       "Download again? [y/N] ".format(output, file_size))
+        answer = input("Warning: File '{0}' with expected filesize {1} "
+                       "already exist!\nDownload again? [y/N] "
+                       .format(output, file_size))
         if answer.lower() != 'y':
             print('Quitting...')
             return
@@ -123,14 +126,17 @@ def download_file(file_url, filename, file_size, output_dir):
                 dl += len(chunk)
                 file.write(chunk)
                 done = int(20 * dl / file_size)
-                sys.stdout.write('\rDownloading {0:21} [{1}{2}] {3}KB'.format(
-                    filename, '=' * done, ' ' * (20 - done), kb_size))
+                sys.stdout.write('\rDownloading {0:21} [{1}{2}] {3}KB'
+                                 .format(filename, '=' * done,
+                                         ' ' * (20 - done),
+                                         kb_size))
                 sys.stdout.flush()
     sys.stdout.write('\n')
     download_size = os.stat(filename).st_size
     if file_size != download_size:
-        print("Warning: download was not successful! Filesize of downloaded file {0} is {1}, "
-              "but github filesize is {2}.".format(filename, download_size, file_size))
+        print("Warning: download was not successful! Filesize of downloaded"
+              " file {0} is {1}, but github filesize is {2}."
+              .format(filename, download_size, file_size))
     else:
         print(f"Download was successful.")
 
@@ -153,7 +159,8 @@ def get_list_of_tags():
             for tag in tags:
                 print('  "{}"'.format(tag))
         else:
-            print('No tag was found for repository "{0}"!'.format(repository))
+            print(
+                'No tag was found for repository "{0}"!'.format(repository))
 
 
 def get_sha_of_tag(repository, tag=None, project_url=PROJECT_URL):
@@ -191,7 +198,7 @@ def display_repo_lof(repository, tag):
             print(item)
     else:
         print('\nNo file was found for repository {0} and {1}!'.format(
-            repository, tag_sha))
+                repository, tag_sha))
 
 
 def get_lang_files(repository, tag, lang, output_dir):
@@ -236,10 +243,12 @@ def get_lang_files(repository, tag, lang, output_dir):
             if not file_url:
                 file_url = item.get('url')
             if item.get('type') in ("dir", "tree", "submodule"):
-                print('"{}" is directory - ignoring...'.format(item['path']))
+                print(
+                    '"{}" is directory - ignoring...'.format(item['path']))
                 continue
             if item['size'] == 0:
-                print('"{}" has 0 lenght - skipping...'.format(item['path']))
+                print(
+                    '"{}" has 0 length - skipping...'.format(item['path']))
                 continue
             if '/' in filename:
                 filename = filename.split('/')[1]
@@ -315,59 +324,60 @@ def main():
     desc = "Tesseract traineddata downloader {}".format(__version__)
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument(
-        "-v", "--version", action='store_true', help="Print version info")
+            "-v", "--version", action='store_true',
+            help="Print version info")
     parser.add_argument(
-        "-o",
-        "--output_dir",
-        default=None,
-        help="""Directory to store downloaded file.\n
+            "-o",
+            "--output_dir",
+            default=None,
+            help="""Directory to store downloaded file.\n
                 Default: TESSDATA_PREFIX environment variable if set,
                 otherwise current directory""")
     parser.add_argument(
-        "-r",
-        "--repository",
-        type=str,
-        choices=REPOSITORIES,
-        default="tessdata_best",
-        help="Specify repository for download.\nDefault: 'tessdata_best'")
+            "-r",
+            "--repository",
+            type=str,
+            choices=REPOSITORIES,
+            default="tessdata_best",
+            help="Specify repository for download.\nDefault: 'tessdata_best'")
     parser.add_argument(
-        "-lr",
-        "--list_repos",
-        action='store_true',
-        help="Display list of repositories")
+            "-lr",
+            "--list_repos",
+            action='store_true',
+            help="Display list of repositories")
     parser.add_argument(
-        "-t",
-        "--tag",
-        type=str,
-        default="the_latest",
-        help="Specify repository tag for download.\n"
-        "Default: 'the_latest' (e.g. the latest commit)")
+            "-t",
+            "--tag",
+            type=str,
+            default="the_latest",
+            help="Specify repository tag for download.\n"
+                 "Default: 'the_latest' (e.g. the latest commit)")
     parser.add_argument(
-        "-lt",
-        "--list_tags",
-        action='store_true',
-        help="Display list of tag for know repositories")
+            "-lt",
+            "--list_tags",
+            action='store_true',
+            help="Display list of tag for know repositories")
     parser.add_argument(
-        "-lof",
-        "--list_of_files",
-        action='store_true',
-        help="Display list of files for specified repository and tag "
-        "(e.g. argument -r and -t must be used with this argument)")
+            "-lof",
+            "--list_of_files",
+            action='store_true',
+            help="Display list of files for specified repository and tag "
+                 "(e.g. argument -r and -t must be used with this argument)")
     parser.add_argument(
-        "-l", "--lang", help="Language or data code of traineddata.")
+            "-l", "--lang", help="Language or data code of traineddata.")
     parser.add_argument(
-        "-U",
-        "--proxy-user",
-        type=str,
-        default=None,
-        help="<user:password> Proxy user and password.")
+            "-U",
+            "--proxy-user",
+            type=str,
+            default=None,
+            help="<user:password> Proxy user and password.")
     parser.add_argument(
-        "-x",
-        "--proxy",
-        type=str,
-        default=None,
-        help="host[:port] for https. Use this proxy. If not specified "
-        "system proxy will be used by default.")
+            "-x",
+            "--proxy",
+            type=str,
+            default=None,
+            help="host[:port] for https. Use this proxy. If not specified "
+                 "system proxy will be used by default.")
     args = parser.parse_args()
 
     if args.version:
@@ -397,7 +407,8 @@ def main():
     if not is_directory_writable(args.output_dir):
         sys.exit(0)
     if args.lang:
-        get_lang_files(args.repository, args.tag, args.lang, args.output_dir)
+        get_lang_files(args.repository, args.tag, args.lang,
+                       args.output_dir)
     # show help if no arguments provided
     if not len(sys.argv) > 1:
         parser.print_help()
