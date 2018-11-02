@@ -197,19 +197,18 @@ def get_lang_files(repository, tag, lang, output_dir):
     print('Start of getting information for download of files for '
           '{0}:'.format(lang))
     if tag == "the_latest":
-        tree_url = '{0}{1}/contents?recursive=1'.format(PROJECT_URL, repository)
-        print("Retrieving the latest file(s) from repository '{0}'"
-              .format(repository))
+        tag_sha = get_sha_of_tag(repository)
     else:
         tag_sha = get_sha_of_tag(repository, tag)
-        if not tag_sha:
-            print("Unknown tag '{0}' for repository '{1}'".format(
+    if not tag_sha:
+        print("Unknown tag '{0}' for repository '{1}'".format(
                 tag, repository))
-            return None
-        print("Retrieving file(s) from repository '{0}', tagged as '{1}'"
-              .format(repository, tag))
-        tree_url = '{0}{1}/git/trees/{2}?recursive=1'.format(PROJECT_URL, repository,
-                                                 tag_sha)
+        return None
+    print("Retrieving file(s) from repository '{0}', tagged as '{1}'"
+          .format(repository, tag))
+    tree_url = '{0}{1}/git/trees/{2}?recursive=1'.format(PROJECT_URL,
+                                                         repository,
+                                                         tag_sha)
     tree_content = requests.get(tree_url, proxies=PROXIES).json()
     if isinstance(tree_content, dict):
         tree = tree_content.get('tree')
@@ -224,7 +223,10 @@ def get_lang_files(repository, tag, lang, output_dir):
               .format(tree_url, repository))
         return False
     for item in tree:
-        code = item['path'].split('.')[0]
+        if item['mode'] == '040000':
+            continue  # skip directories
+        filename = item['path']
+        code = filename.split('.')[0]
         if lang == code:
             file_url = item.get('git_url')
             if not file_url:
@@ -237,7 +239,9 @@ def get_lang_files(repository, tag, lang, output_dir):
             if item['size'] == 0:
                 print('"{}" has 0 lenght - skipping...'.format(item['path']))
                 continue
-            download_file(file_url, item['path'], item['size'], output_dir)
+            if '/' in filename:
+                filename = filename.split('/')[1]
+            download_file(file_url, filename, item['size'], output_dir)
             not_found = False
     if not_found:
         print('Could not find any file for "{}"'.format(lang))
