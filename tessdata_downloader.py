@@ -48,7 +48,6 @@ def get_repo_tags(project_url, repository):
 
 def get_repository_lof(project_url, repository, tag):
     """Get list of files for repository."""
-    sha = None
     if tag == "the_latest":
         sha = get_sha_of_tag(repository)
     else:
@@ -66,7 +65,7 @@ def get_repository_lof(project_url, repository, tag):
     elif isinstance(tree_content, list):
         tree = tree_content
     else:
-        print('Unexpected structure {0}'.format(type(tree)))
+        print('Unexpected structure {0}'.format(type(tree_content)))
         return False
     list_of_files = []
     for item in tree:
