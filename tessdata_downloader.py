@@ -137,7 +137,7 @@ def download_file(file_url, filename, file_size, output_dir):
               " file {0} is {1}, but github filesize is {2}."
               .format(filename, download_size, file_size))
     else:
-        print(f"Download was successful.")
+        print("Download was successful.")
 
 
 def list_of_repos():
@@ -275,7 +275,7 @@ def test_proxy_connection(test_proxies):
     try:
         test_r = requests.get(PROJECT_URL + repo_name, proxies=test_proxies)
     except requests.exceptions.ProxyError as error:
-        print(f'Connection is refused {error}', type(error))
+        print('Connection is refused {0}'.format(error), type(error))
         return False
     if test_r.json().get('name') == repo_name:
         return True
@@ -301,7 +301,7 @@ def get_proxy_from_file():
 def get_proxies(proxy_server, proxy_user):
     """Process information about proxies."""
     proxies = None
-    proxy_template = f'http://{proxy_user}@{proxy_server}'
+    proxy_template = 'http://{0}@{1}'.format(proxy_user, proxy_server)
 
     if proxy_server and proxy_user:  # prefer to use program arguments
         proxies = {'http': proxy_template,
