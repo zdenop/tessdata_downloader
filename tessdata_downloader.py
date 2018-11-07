@@ -27,9 +27,9 @@ import requests
 
 __author__ = "Zdenko Podobny <zdenop@gmail.com>"
 __copyright__ = "Copyright 2018 Zdenko Podobny"
-__version__ = "1.1"
+__version__ = "1.2"
 __license__ = "Apache license 2"
-__date__ = "31/07/2018"
+__date__ = "07/11/2018"
 
 PROJECT_URL = 'https://api.github.com/repos/tesseract-ocr/'
 REPOSITORIES = ['tessdata', 'tessdata_fast', 'tessdata_best']
