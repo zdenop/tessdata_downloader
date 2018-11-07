@@ -70,7 +70,7 @@ def get_repository_lof(project_url, repository, tag):
     list_of_files = []
     for item in tree:
         if item['mode'] == '100644':  # list only files
-            list_of_files.append(item['path'])
+            list_of_files.append((item['path'], item['size']))
         # list_of_files.append({item['path']: (item['size'], item['sha'])})
     return list_of_files
 
@@ -193,8 +193,8 @@ def display_repo_lof(repository, tag):
     if tree_content:
         print("\nFollowing files were found for repository"
               " '{0}' and tag '{1}':".format(repository, tag))
-        for item in tree_content:
-            print(item)
+        for item, size in tree_content:
+            print("{0}, size: {1}".format(item, size))
     else:
         print('\nNo file was found for repository {0} and {1}!'.format(
                 repository, tag_sha))
