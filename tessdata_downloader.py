@@ -282,11 +282,8 @@ def test_proxy_connection(test_proxies):
     return False
 
 
-def get_proxies(proxy_server, proxy_user):
-    """Process information about proxies."""
-    proxies = None
-    proxy_template = f'http://{proxy_user}@{proxy_server}'
-    # try to import proxy info from local file
+def get_proxy_from_file():
+    """Try to import proxy info from local file."""
     try:
         # try to look for local_settings.py with info about proxy
         from local_settings import PROXIES
@@ -296,23 +293,33 @@ def get_proxies(proxy_server, proxy_user):
         elif test_proxy_connection(PROXIES):
             proxies = PROXIES
         print("Loading Proxy information from file 'local_settings.py'...")
+        return proxies
     except ImportError:
-        pass
+        return None
 
-    if proxy_server and proxy_user:
+
+def get_proxies(proxy_server, proxy_user):
+    """Process information about proxies."""
+    proxies = None
+    proxy_template = f'http://{proxy_user}@{proxy_server}'
+
+    if proxy_server and proxy_user:  # prefer to use program arguments
         proxies = {'http': proxy_template,
                    'https': proxy_template}
+    elif not proxies:
+        proxies = get_proxy_from_file()
+    else:
+        # TODO: check proxy format
+        # TODO: user auth format
+        if not proxy_server:
+            pass
+            # check for system proxy
+        if not proxy_user:
+            pass
+            # proxy_user
+        # system_proxy = urllib.request.getproxies()
 
-    # TODO: check proxy format
-    # TODO: user auth format
-    if not proxy_server:
-        pass
-        # check for system proxy
-    if not proxy_user:
-        pass
-        # proxy_user
-    # system_proxy = urllib.request.getproxies()
-    if not test_proxy_connection(proxies):
+    if proxies and not test_proxy_connection(proxies):
         return -1
     return proxies
 
@@ -321,6 +328,7 @@ def main():
     """Main loop."""
     global PROXIES
     desc = "Tesseract traineddata downloader {}".format(__version__)
+
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument(
             "-v", "--version", action='store_true',
@@ -397,7 +405,7 @@ def main():
     PROXIES = get_proxies(args.proxy, args.proxy_user)
     if PROXIES == -1:
         print("Wrong proxy information provided!")
-        sys.exit(0)
+        sys.exit(1)
     if args.list_repos:
         list_of_repos()
         sys.exit(0)
