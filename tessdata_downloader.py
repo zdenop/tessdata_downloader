@@ -131,7 +131,7 @@ def download_file(file_url, filename, file_size, output_dir):
                                          kb_size))
                 sys.stdout.flush()
     sys.stdout.write('\n')
-    download_size = os.stat(filename).st_size
+    download_size = os.stat(output).st_size
     if file_size != download_size:
         print("Warning: download was not successful! Filesize of downloaded"
               " file {0} is {1}, but github filesize is {2}."
@@ -202,6 +202,8 @@ def display_repo_lof(repository, tag):
 
 def get_lang_files(repository, tag, lang, output_dir):
     """Download language files from repository based on tag."""
+    if ".traineddata" in lang:
+        lang = lang.replace('.traineddata', '')
     print('Start of getting information for download of files for '
           '{0}:'.format(lang))
     if tag == "the_latest":
