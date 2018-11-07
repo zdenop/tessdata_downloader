@@ -262,9 +262,16 @@ def is_directory_writable(directory):
 
     Return False if it is not possible to create file there.
     """
-    if not os.access(directory, os.W_OK):
-        print('Can not write to directory "{}"!\nPlease check if it exists '
-              'or if you have sufficient rights.'.format(directory))
+    if not os.path.exists(directory):
+        print('Output directory "{0}" does not exists! Please create it '
+              'first.'.format(directory))
+        return False
+    elif not os.path.isdir(directory):
+        print('"{0}" is not directory!'.format(directory))
+        return False
+    elif not os.access(directory, os.W_OK):
+        print('Can not write to directory "{}"!\nPlease check if you '
+              'have sufficient rights.'.format(directory))
         return False
     return True
 
