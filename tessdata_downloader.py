@@ -379,13 +379,17 @@ def main():
                  "system proxy will be used by default.")
     args = parser.parse_args()
 
+    # show help if no arguments provided
+    if not len(sys.argv) > 1:
+        parser.print_help()
+
     if args.version:
         print(desc, __date__)
         print()
         print("Author:", __author__)
         print("Copyright:", __copyright__)
         print("License:", __license__)
-        return
+        sys.exit(0)
     if not args.output_dir and 'TESSDATA_PREFIX' in os.environ:
         args.output_dir = os.environ['TESSDATA_PREFIX']
     elif not args.output_dir:
@@ -408,9 +412,6 @@ def main():
     if args.lang:
         get_lang_files(args.repository, args.tag, args.lang,
                        args.output_dir)
-    # show help if no arguments provided
-    if not len(sys.argv) > 1:
-        parser.print_help()
 
 
 if __name__ == '__main__':
