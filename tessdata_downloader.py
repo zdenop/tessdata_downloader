@@ -166,7 +166,7 @@ def get_sha_of_tag(repository, tag=None, project_url=PROJECT_URL):
     """Get sha for tag."""
     sha = None
     if not tag:
-        url = '{0}{1}/git/refs/heads/master'.format(project_url, repository)
+        url = '{0}{1}/git/refs/heads/main'.format(project_url, repository)
     else:
         url = '{0}{1}/tags'.format(project_url, repository)
     r = requests.get(url, proxies=PROXIES)
